@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import model.Branch;
@@ -71,7 +72,8 @@ public class ExpandableListActivity extends AppCompatActivity {
         if (group == null) return;
 
         // TODO Replace strings of collections with constants
-        db.collection("branches").whereEqualTo("group", group).get()
+        db.collection("branches").whereEqualTo("group", group)
+                .whereGreaterThan("papersCount", 0).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
@@ -98,11 +100,13 @@ public class ExpandableListActivity extends AppCompatActivity {
         DocumentReference branchRef = db.collection("branches").document(branch.getId());
         db.collection("semesters")
                 .whereEqualTo("branch", branchRef)
-                .orderBy("key").get()
+                .whereGreaterThan("papersCount", 0)
+                .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
                         List<Semester> dbSemesters = snapshots.toObjects(Semester.class);
+                        Collections.sort(dbSemesters, (s1, s2) -> s1.getKey().compareTo(s2.getKey()));
                         branch.getSemesters().clear();
                         branch.getSemesters().addAll(dbSemesters);
                         adapter.notifyDataSetChanged();
