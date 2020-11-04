@@ -30,11 +30,17 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.application.kurukshetrauniversitypapers.expandablelist.ExpandableListActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import static model.BranchGroup.GROUP_BTECH;
+import static model.BranchGroup.GROUP_COMPUTER_APPLICATIONS;
+import static model.BranchGroup.GROUP_DIPLOMA;
+import static model.BranchGroup.GROUP_MANAGEMENT;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -142,8 +148,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      *
      * @param clazz the class of the activity to start. Needs to be an extension of {@link AppCompatActivity}.
      */
-    private void startActivity(@NonNull Class<? extends AppCompatActivity> clazz) {
-        startActivity(new Intent(MainActivity.this, clazz));
+    private void startActivity(@NonNull Class<? extends AppCompatActivity> clazz, String reference) {
+        Intent intent = new Intent(this, clazz);
+        // TODO Replace string extra key with constant
+        intent.putExtra("reference", reference);
+        startActivity(intent);
     }
 
     /**
@@ -153,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     public void onItemClicked(View view) {
         Class<? extends AppCompatActivity> clazz = null;
+        String reference = null;
         switch (view.getId()) {
             case R.id.bt_quick_search:
                 clazz = Filters.class;
@@ -161,22 +171,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 clazz = Websites.class;
                 break;
             case R.id.bt_diploma:
-                clazz = Diploma_expendable_list.class;
+                clazz = ExpandableListActivity.class;
+                reference = GROUP_DIPLOMA;
                 break;
             case R.id.bt_btech:
-                clazz = Btech_expendable_list.class;
+                clazz = ExpandableListActivity.class;
+                reference = GROUP_BTECH;
                 break;
             case R.id.bt_bba_mba:
-                clazz = Management_expendable_list.class;
+                clazz = ExpandableListActivity.class;
+                reference = GROUP_MANAGEMENT;
                 break;
             case R.id.bt_bca_mca:
-                clazz = ComputerApplications_expendable_list.class;
+                clazz = ExpandableListActivity.class;
+                reference = GROUP_COMPUTER_APPLICATIONS;
                 break;
             case R.id.bt_sign_up:
                 clazz = RegisterActivity.class;
         }
         if (clazz == null) return;
-        startActivity(clazz);
+        startActivity(clazz, reference);
     }
 
     public void updateNavHeader() {
