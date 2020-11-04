@@ -13,11 +13,11 @@ import com.application.kurukshetrauniversitypapers.R;
 import com.application.kurukshetrauniversitypapers.filelist.FileListActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import model.Subject;
@@ -63,18 +63,14 @@ public class SubjectListActivity extends AppCompatActivity implements SubjectLis
     private void getSubjects() {
         // TODO Replace strings of collections with constants
         DocumentReference semesterRef = db.collection("semesters").document(semesterId);
-        db.collection("subjects").whereEqualTo("semester", semesterRef).get()
+        db.collection("subjects")
+                .whereEqualTo("semester", semesterRef)
+                .whereGreaterThan("papersCount", 0).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot snapshots) {
-                        List<DocumentSnapshot> subjectDocuments = snapshots.getDocuments();
-                        for (DocumentSnapshot subjectDoc : subjectDocuments) {
-                            Subject subject = subjectDoc.toObject(Subject.class);
-                            if (subject != null) {
-                                subjectList.add(subject);
-                                adapter.notifyDataSetChanged();
-                            }
-                        }
+                        subjectList.addAll(snapshots.toObjects(Subject.class));
+                        Collections.sort(subjectList, (s1, s2) -> s1.getName().compareTo(s2.getName()));
                         adapter.notifyDataSetChanged();
                     }
                 });

@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import model.File;
@@ -59,6 +60,7 @@ public class FileListActivity extends AppCompatActivity {
                     public void onSuccess(QuerySnapshot snapshots) {
                         List<File> dbFiles = snapshots.toObjects(File.class);
                         files.addAll(dbFiles);
+                        Collections.sort(files, (f1, f2) -> f1.getName().compareTo(f2.getName()));
                         adapter.notifyDataSetChanged();
                     }
                 });
