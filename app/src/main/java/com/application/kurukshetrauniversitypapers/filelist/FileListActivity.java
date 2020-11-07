@@ -2,16 +2,14 @@ package com.application.kurukshetrauniversitypapers.filelist;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.application.kurukshetrauniversitypapers.R;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +22,8 @@ public class FileListActivity extends AppCompatActivity {
     public static final String KEY_BOARD = "board";
     public static final String KEY_BRANCH = "branch";
     public static final String KEY_SEMESTER = "semester";
-    public static final String KEY_SUBJECT = "subject";
+    public static final String KEY_SUBJECTS = "subjects";
+    public static final String KEY_FILES = "files";
 
     private RecyclerView fileListRecyclerView;
     private FirebaseFirestore db;
@@ -46,23 +45,18 @@ public class FileListActivity extends AppCompatActivity {
         fileListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileListRecyclerView.setAdapter(adapter);
 
-        // TODO Replace hardcoded string with constant
-        String subjectId = getIntent().getStringExtra("subject");
-        getFiles(subjectId);
+        List<String> filePaths = getIntent().getStringArrayListExtra(KEY_FILES);
+        if (filePaths == null) return;
+        getFiles(filePaths);
     }
 
-    private void getFiles(String subjectId) {
-        // TODO Replace collection strings with constants
-        DocumentReference subjectRef = db.collection("subjects").document(subjectId);
-        db.collection("files").whereEqualTo("subject", subjectRef).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot snapshots) {
-                        List<File> dbFiles = snapshots.toObjects(File.class);
-                        files.addAll(dbFiles);
-                        Collections.sort(files, (f1, f2) -> f1.getName().compareTo(f2.getName()));
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+    private void getFiles(@NonNull List<String> filePaths) {
+        for (String filePath : filePaths) {
+            db.document(filePath).get().addOnSuccessListener(documentSnapshot -> {
+                files.add(documentSnapshot.toObject(File.class));
+                Collections.sort(files, (f1, f2) -> f1.getName().compareTo(f2.getName()));
+                adapter.notifyDataSetChanged();
+            });
+        }
     }
 }

@@ -13,10 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.application.kurukshetrauniversitypapers.R;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 import java.util.Locale;
@@ -54,14 +52,11 @@ public class SubjectListAdapter extends RecyclerView.Adapter<SubjectListAdapter.
         // TODO Replace strings of collections with constants
         DocumentReference subjectRef = db.collection("subjects").document(subject.getId());
         db.collection("files").whereEqualTo("subject", subjectRef).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot snapshots) {
-                        List<File> files = snapshots.toObjects(File.class);
-                        for (File file : files) {
-                            String fileName = file.getName() + ".pdf";
-                            downloadFile(fileName, file.getUrl());
-                        }
+                .addOnSuccessListener(snapshots -> {
+                    List<File> files = snapshots.toObjects(File.class);
+                    for (File file : files) {
+                        String fileName = file.getName() + ".pdf";
+                        downloadFile(fileName, file.getUrl());
                     }
                 });
     }
@@ -92,14 +87,10 @@ public class SubjectListAdapter extends RecyclerView.Adapter<SubjectListAdapter.
     @Override
     public void onBindViewHolder(@NonNull SubjectViewHolder holder, int position) {
         Subject subject = subjectList.get(position);
-        holder.itemView.setOnClickListener(v -> {
-            listener.onClick(subject);
-        });
+        holder.itemView.setOnClickListener(v -> listener.onClick(subject));
         holder.subjectNameTextView.setText(subject.getName());
-        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", subject.getPapersCount()));
-        holder.downloadButton.setOnClickListener(v -> {
-            download(subjectList.get(position));
-        });
+        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", subject.getPapers().size()));
+        holder.downloadButton.setOnClickListener(v -> download(subjectList.get(position)));
     }
 
     @Override

@@ -12,22 +12,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.application.kurukshetrauniversitypapers.R;
 import com.application.kurukshetrauniversitypapers.subjectlist.SubjectListActivity;
+import com.google.firebase.firestore.DocumentReference;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import model.Semester;
+import model.Branch;
 
-import static com.application.kurukshetrauniversitypapers.filelist.FileListActivity.KEY_SEMESTER;
+import static com.application.kurukshetrauniversitypapers.filelist.FileListActivity.KEY_SUBJECTS;
 
 public class ExpandableItemAdapter extends RecyclerView.Adapter<ExpandableItemAdapter.SemesterViewHolder> {
 
     private Context context;
-    private List<Semester> semesters;
+    private Branch branch;
 
-    public ExpandableItemAdapter(Context context, List<Semester> semesters) {
+    public ExpandableItemAdapter(Context context, Branch branch) {
         this.context = context;
-        this.semesters = semesters;
+        this.branch = branch;
     }
 
     @NonNull
@@ -39,24 +41,26 @@ public class ExpandableItemAdapter extends RecyclerView.Adapter<ExpandableItemAd
 
     @Override
     public void onBindViewHolder(@NonNull SemesterViewHolder holder, int position) {
-        Semester semester = semesters.get(position);
-        String semesterName = context.getString(R.string.semester) + " " + semester.getKey().replaceFirst("^0+(?!$)", "");
+        String semesterName = context.getString(R.string.semester) + " " + (position + 1);
         holder.titleTextView.setText(semesterName);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO Handle click event
-                Intent i = new Intent(context, SubjectListActivity.class);
-                i.putExtra(KEY_SEMESTER, semester.getId());
-                context.startActivity(i);
+        holder.itemView.setOnClickListener(v -> {
+            // TODO Handle click event
+            Intent i = new Intent(context, SubjectListActivity.class);
+            ArrayList<String> subjects = new ArrayList<>();
+            List<DocumentReference> subjectRefs = branch.getSubjects().get(position + 1 + "");
+            if (subjectRefs == null) return;
+            for (DocumentReference ref : subjectRefs) {
+                subjects.add(ref.getPath());
             }
+            i.putExtra(KEY_SUBJECTS, subjects);
+            context.startActivity(i);
         });
-        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", semester.getPapersCount()));
+        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", this.branch.getPapersCount().get(position + 1 + "")));
     }
 
     @Override
     public int getItemCount() {
-        return semesters.size();
+        return this.branch.getSemesters();
     }
 
     public static class SemesterViewHolder extends RecyclerView.ViewHolder {

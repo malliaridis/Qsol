@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.application.kurukshetrauniversitypapers.R;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,28 +41,34 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<ExpandableListAd
     public void onBindViewHolder(@NonNull BranchViewHolder holder, int position) {
         Branch branch = branches.get(position);
         holder.titleTextView.setText(branch.getName());
-        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", branch.getPapersCount()));
+        long papersCount = sum(branch.getPapersCount().values());
+        holder.paperCountTextView.setText(String.format(Locale.getDefault(), "%d", papersCount));
         holder.semestersRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-        holder.semestersRecyclerView.setAdapter(new ExpandableItemAdapter(context, branch.getSemesters()));
+        holder.semestersRecyclerView.setAdapter(new ExpandableItemAdapter(context, branch));
         // TODO Optimize the adapter instantiation
         if (expandedItemPosition == position) {
             holder.semestersRecyclerView.setVisibility(View.VISIBLE);
         } else {
             holder.semestersRecyclerView.setVisibility(View.GONE);
         }
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (expandedItemPosition == position) {
+        holder.itemView.setOnClickListener(v -> {
+            if (expandedItemPosition == position) {
+                collapseItem();
+            } else {
+                if (expandedItemPosition != -1) {
                     collapseItem();
-                } else {
-                    if (expandedItemPosition != -1) {
-                        collapseItem();
-                    }
-                    expandItem(holder, position);
                 }
+                expandItem(holder, position);
             }
         });
+    }
+
+    private long sum(Collection<Long> papersCount) {
+        long sum = 0;
+        for (long value : papersCount) {
+            sum += value;
+        }
+        return sum;
     }
 
     @Override
